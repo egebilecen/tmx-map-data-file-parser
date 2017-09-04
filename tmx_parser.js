@@ -117,7 +117,7 @@ var TMX_Parser = {
 
                 var tileset = this.all[tilesetName];
 
-                if( tileId >= tileset.firstgid && tileId <= tileset.tilesetCount )
+                if( tileId >= tileset.firstgid && tileId <= ((tileset.tilesetCount - 1) + tileset.firstgid) )
                     return tileset;
             }
         },
@@ -184,15 +184,17 @@ var TMX_Parser = {
                 {
                     for( var w=0; w < layer.data[h].length; w++ )
                     {
+                        if(layer.data[h][w] === 0) continue;
+
                         var tileset     = TMX_Parser.tilesets.which(layer.data[h][w]); //return: tileset
-                        var limitPerRow = tileset.img.width / TMX_Parser.information.tileWidth;
-                        var posWidth    = layer.data[h][w]-1;
+                        var limitPerRow = tileset.img.width / tileset.tileWidth;
+                        var posWidth    = layer.data[h][w] - tileset.firstgid;
                         var posHeight   = 0;
 
                         if( posWidth > limitPerRow )
                         {
+                            posHeight = posHeight + Math.floor(posWidth / limitPerRow);
                             posWidth  = posWidth % limitPerRow;
-                            posHeight = posHeight + Math.floor((layer.data[h][w]-1) / limitPerRow);
                         }
 
                         TMX_Parser.settings.ctx.beginPath();
