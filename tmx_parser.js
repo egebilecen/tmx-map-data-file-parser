@@ -17,54 +17,78 @@ var TMX_Parser = {
         this.settings["debug"] = _debug; 
         return;
     },
-    load : function(fileName,_autoRun){
+    load : function(filePath,_autoRun){
         if(_autoRun === null || typeof _autoRun === "undefined" || typeof _autoRun !== "boolean") _autoRun = false;
         $.ajax({
-            url  : fileName,
+            url  : filePath,
             type : "get",
             dataType : "text",
             success  : function(data){
-                TMX_Parser.file.name   = fileName;
-                TMX_Parser.file.data   = data;
-                TMX_Parser.file.status = 1;
-                if(_autoRun) TMX_Parser.run();
+                var VdZcW = filePath.split("/");
+                var lHWIj = VdZcW[VdZcW.length - 1].split(".");
+
+                var pureName = lHWIj[lHWIj.length - 2];
+                var name     = VdZcW[VdZcW.length - 1];
+                var path     = filePath;
+                var data     = data;
+                var status   = 1;
+
+                TMX_Parser.file.all[pureName] = {
+                    pureName : pureName,
+                    name     : name,
+                    path     : path,
+                    data     : data,
+                    status   : status
+                };
+                if(_autoRun)
+                {
+                    if(TMX_Parser.watcher.switchFile(pureName))
+                        TMX_Parser.run();
+                    else console.log("!!! - TMX Parser - File for switching is not found! ("+pureName+")");
+                }
             },
             error    : function(){
-                console.log("!!! - TMX Parser - Cannot load file ("+fileName+").");
+                console.log("!!! - TMX Parser - Cannot load file ("+filePath+").");
             }
         });
     },
     run : function(){
-        if( this.file.status === 1 )
+        var FILE = this.file.all[this.watcher.all.file.pureName];
+        if( FILE.status === 1 )
         {
             if(this.settings.debug) console.log("??? - TMX Parser - Starting to parsing.");
 
-            var xmlData      = new DOMParser().parseFromString(this.file.data,"text/xml").getElementsByTagName("map")[0];
-            this.file["xml"] = xmlData;
+            //-Reset watcher
+            this.watcher.reset();
+
+            var xmlData      = new DOMParser().parseFromString(FILE.data,"text/xml").getElementsByTagName("map")[0];
+            this.information[FILE.pureName] = {};
+            FILE["xml"] = xmlData;
 
             //-Orientation
-            this.information["orientation"] = xmlData.getAttribute("orientation");
+            this.information[FILE.pureName]["orientation"] = xmlData.getAttribute("orientation");
 
             //-Render Order
-            this.information["renderOrder"] = xmlData.getAttribute("renderorder");
+            this.information[FILE.pureName]["renderOrder"] = xmlData.getAttribute("renderorder");
 
             //-Map Width (Tile)
-            this.information["mapWidth"]    = parseInt(xmlData.getAttribute("width"));
+            this.information[FILE.pureName]["mapWidth"]    = parseInt(xmlData.getAttribute("width"));
 
             //-Map Height (Tile)
-            this.information["mapHeight"]   = parseInt(xmlData.getAttribute("height"));
+            this.information[FILE.pureName]["mapHeight"]   = parseInt(xmlData.getAttribute("height"));
 
             //-Tile Width
-            this.information["tileWidth"]   = parseInt(xmlData.getAttribute("tilewidth"));
+            this.information[FILE.pureName]["tileWidth"]   = parseInt(xmlData.getAttribute("tilewidth"));
 
             //-Tile Height
-            this.information["tileHeight"]  = parseInt(xmlData.getAttribute("tileheight"));
+            this.information[FILE.pureName]["tileHeight"]  = parseInt(xmlData.getAttribute("tileheight"));
 
             //------------------------------------------------------------------------//
 
             //-Tilesets
             var tilesets = xmlData.getElementsByTagName("tileset");
-            this.watcher.tilesets.totalCount = tilesets.length;
+            this.tilesets.all[FILE.pureName] = {};
+            this.watcher.all.tilesets.totalCount = tilesets.length;
 
             for( var _i=0; _i < tilesets.length; _i++ )
             {
@@ -78,7 +102,7 @@ var TMX_Parser = {
                 var tilesetTileCount  = parseInt(tileset.getAttribute("tilecount"));
 
                 //-Create tileset on this.tilesets
-                this.tilesets.all[tilesetName] = {
+                this.tilesets.all[FILE.pureName][tilesetName] = {
                     name         : tilesetName,
                     firstgid     : tilesetFirst_gId,
                     tileWidth    : tilesetTileWidth,
@@ -96,9 +120,9 @@ var TMX_Parser = {
                 img.setAttribute("data-name",tilesetName);
                 img.onload = function(){
                     var _imgName = this.getAttribute("data-name");
-                    TMX_Parser.tilesets.all[_imgName].img    = this;
-                    TMX_Parser.tilesets.all[_imgName].source = this.src;
-                    TMX_Parser.tilesets.all[_imgName].status = 1;
+                    TMX_Parser.tilesets.all[FILE.pureName][_imgName].img    = this;
+                    TMX_Parser.tilesets.all[FILE.pureName][_imgName].source = this.src;
+                    TMX_Parser.tilesets.all[FILE.pureName][_imgName].status = 1;
                     TMX_Parser.tilesets.loaded();
                 }
             }
@@ -111,23 +135,29 @@ var TMX_Parser = {
     settings : {},
     tilesets : {
         which : function(tileId){
-            for( var tilesetName in this.all )
+            for( var tilesetName in this.all[TMX_Parser.watcher.all.file.pureName] )
             {
-                if(!this.all.hasOwnProperty(tilesetName)) continue;
+                if(!this.all[TMX_Parser.watcher.all.file.pureName].hasOwnProperty(tilesetName)) continue;
 
-                var tileset = this.all[tilesetName];
+                var tileset = this.all[TMX_Parser.watcher.all.file.pureName][tilesetName];
 
                 if( tileId >= tileset.firstgid && tileId <= ((tileset.tilesetCount - 1) + tileset.firstgid) )
                     return tileset;
             }
         },
         loaded : function(){
-            TMX_Parser.watcher.tilesets.currentCount++;
-            if( TMX_Parser.watcher.tilesets.currentCount === TMX_Parser.watcher.tilesets.totalCount )
+            TMX_Parser.watcher.all.tilesets.currentCount++;
+            if( TMX_Parser.watcher.all.tilesets.currentCount === TMX_Parser.watcher.all.tilesets.totalCount )
             {
-                if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - All tilesets loaded. ("+TMX_Parser.watcher.tilesets.currentCount+"/"+TMX_Parser.watcher.tilesets.totalCount+")");
+                if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - All tilesets loaded. ("+TMX_Parser.watcher.all.tilesets.currentCount+"/"+TMX_Parser.watcher.all.tilesets.totalCount+")");
                 TMX_Parser.layers.startRendering();
             }
+
+            //-Create event
+            var event = document.createEvent("Event");
+            event.initEvent("TMX_Parser_tileset_loaded");
+            event.information = { totalTileset : TMX_Parser.watcher.all.tilesets.totalCount, loadedTileset : TMX_Parser.watcher.all.tilesets.currentCount };
+            document.dispatchEvent(event);
         },
         all : {}
     },
@@ -136,7 +166,9 @@ var TMX_Parser = {
             if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - Starting to rendering layer datas.");
             
             //-Layers
-            var layers = TMX_Parser.file.xml.getElementsByTagName("layer");
+            var layers = TMX_Parser.file.all[TMX_Parser.watcher.all.file.pureName].xml.getElementsByTagName("layer");
+
+            TMX_Parser.layers.all[TMX_Parser.watcher.all.file.pureName] = {};
 
             for( var _i=0; _i < layers.length; _i++ )
             {
@@ -155,14 +187,14 @@ var TMX_Parser = {
                 //-Re-edit Bad Layer Data
                 var lastIndex     = 0;
                 var layerGoodData = [];
-                for( var _j=0; _j < layerBadData.length / TMX_Parser.information.mapWidth; _j++ )
+                for( var _j=0; _j < layerBadData.length / TMX_Parser.information[TMX_Parser.watcher.all.file.pureName].mapWidth; _j++ )
                 {
-                    var croppedData = layerBadData.slice(lastIndex,lastIndex+TMX_Parser.information.mapWidth);
+                    var croppedData = layerBadData.slice(lastIndex,lastIndex+TMX_Parser.information[TMX_Parser.watcher.all.file.pureName].mapWidth);
                     layerGoodData.push(croppedData);
-                    lastIndex = lastIndex + TMX_Parser.information.mapWidth;
+                    lastIndex = lastIndex + TMX_Parser.information[TMX_Parser.watcher.all.file.pureName].mapWidth;
                 }
 
-                TMX_Parser.layers.all[layerName] = {
+                TMX_Parser.layers.all[TMX_Parser.watcher.all.file.pureName][layerName] = {
                     name   : layerName,
                     width  : parseInt(layerWidth),
                     height : parseInt(layerHeight),
@@ -174,11 +206,11 @@ var TMX_Parser = {
         draw : function(){
             if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - Drawing layers to the canvas.");
             
-            for( var layerName in TMX_Parser.layers.all )
+            for( var layerName in TMX_Parser.layers.all[TMX_Parser.watcher.all.file.pureName] )
             {
-                if(!TMX_Parser.layers.all.hasOwnProperty(layerName)) continue;
+                if(!TMX_Parser.layers.all[TMX_Parser.watcher.all.file.pureName].hasOwnProperty(layerName)) continue;
 
-                var layer = TMX_Parser.layers.all[layerName];
+                var layer = TMX_Parser.layers.all[TMX_Parser.watcher.all.file.pureName][layerName];
 
                 for( var h=0; h < layer.data.length; h++ )
                 {
@@ -213,17 +245,36 @@ var TMX_Parser = {
         all : {}
     },
     watcher  : {
-        tilesets : {
-            totalCount   : 0,
-            currentCount : 0
+        all : {
+            tilesets : {
+                totalCount   : 0,
+                currentCount : 0
+            },
+            file : {
+                pureName : null
+            }
+        },
+        reset : function(){
+            //-Tilesets
+            this.all.tilesets.totalCount   = 0;
+            this.all.tilesets.currentCount = 0;
+        },
+        switchFile : function(filePureName){
+            if(TMX_Parser.file.all.hasOwnProperty(filePureName))
+            {
+                this.all.file.pureName = filePureName;
+                return true;
+            }
+            else return false;
         }
     },
 
     //-Variables
     file : { //file that will be parsed
-        name : null,
-        data : null,
-        status : 0 // 0: not loaded, 1: loaded
+        all : {},
+        // name : null,
+        // data : null,
+        // status : 0 // 0: not loaded, 1: loaded
     },
     information : {} //gives general information
 };
