@@ -17,7 +17,7 @@ var TMX_Parser = {
         this.settings["debug"] = _debug; 
         return;
     },
-    load : function(filePath,_autoRun){
+    load : function(filePath, tilesetDirPath, _autoRun){
         if(_autoRun === null || typeof _autoRun === "undefined" || typeof _autoRun !== "boolean") _autoRun = false;
         $.ajax({
             url  : filePath,
@@ -39,6 +39,9 @@ var TMX_Parser = {
                     data     : data,
                     status   : status
                 };
+                
+                TMX_Parser.watcher.all.tilesets.baseDir = tilesetDirPath;
+                
                 if(_autoRun)
                 {
                     if(TMX_Parser.watcher.switchFile(pureName))
@@ -113,9 +116,12 @@ var TMX_Parser = {
                 };
 
                 var orginalImg = tileset.getElementsByTagName("image")[0];
-
+                
+                var source = orginalImg.getAttribute("source").split("/");
+                source     = source[source.length - 1];
+                
                 var img    = new Image();
-                img.src    = orginalImg.getAttribute("source");
+                img.src    = TMX_Parser.watcher.all.tilesets.baseDir + source;
                 img.setAttribute("data-name",tilesetName);
                 img.onload = function(){
                     var _imgName = this.getAttribute("data-name");
@@ -247,7 +253,8 @@ var TMX_Parser = {
         all : {
             tilesets : {
                 totalCount   : 0,
-                currentCount : 0
+                currentCount : 0,
+                baseDir      : null
             },
             file : {
                 pureName : null
