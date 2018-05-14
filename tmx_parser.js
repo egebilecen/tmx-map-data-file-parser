@@ -30,7 +30,6 @@ var TMX_Parser = {
                 var pureName = lHWIj[lHWIj.length - 2];
                 var name     = VdZcW[VdZcW.length - 1];
                 var path     = filePath;
-                var data     = data;
                 var status   = 1;
 
                 TMX_Parser.file.all[pureName] = {
