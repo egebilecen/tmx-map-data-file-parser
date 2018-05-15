@@ -1,5 +1,5 @@
 //=============================================================================
-// Isometric TMX File Parser v1.0 (Based on Tiled Map Editor)
+// TMX File Parser v1.0 (Based on Tiled Map Editor)
 // ----------------------------------------------------------------------------
 // Author : Ege Bilecen
 // Website: egebilecen.info
@@ -207,7 +207,12 @@ var Isometric_TMX_Parser = {
             }
             if(Isometric_TMX_Parser.settings.debug) console.log("??? - Isometric TMX Parser - All layer datas rendered. For draw them on canvas, please run \"Isometric_TMX_Parser.layers.draw()\" function.");
         },
-        draw : function(){
+        draw : function(offsetX, offsetY){
+            if(typeof offsetX !== "number")
+                offsetX = 0;
+            if(typeof offsetY !== "number")
+                offsetY = 0;
+
             if(Isometric_TMX_Parser.settings.debug) console.log("??? - Isometric TMX Parser - Drawing layers to the canvas.");
 
             for( var layerName in Isometric_TMX_Parser.layers.all[Isometric_TMX_Parser.watcher.all.file.pureName] )
@@ -222,23 +227,33 @@ var Isometric_TMX_Parser = {
                     {
                         if(layer.data[h][w] === 0) continue;
 
+                        _w = w+1;
+                        _h = h+1;
+
                         var tileset     = Isometric_TMX_Parser.tilesets.which(layer.data[h][w]); //return: tileset
                         var limitPerRow = tileset.img.width / tileset.tileWidth;
                         var posWidth    = layer.data[h][w] - tileset.firstgid;
                         var posHeight   = 0;
 
-                        if( posWidth > limitPerRow )
+                        if( posWidth >= limitPerRow )
                         {
                             posHeight = posHeight + Math.floor(posWidth / limitPerRow);
                             posWidth  = posWidth % limitPerRow;
                         }
+
+                        var tile = {
+                            draw_position : {
+                                x : w * tileset.tileWidth  + (-(h+w) * (tileset.tileWidth/2)),
+                                y : h * tileset.tileHeight + ((w-h) * (tileset.tileHeight/2))
+                            }
+                        };
 
                         Isometric_TMX_Parser.settings.ctx.beginPath();
                         Isometric_TMX_Parser.settings.ctx.drawImage(
                             tileset.img, //img
                             posWidth * tileset.tileWidth, posHeight * tileset.tileHeight, //start crop x, start crop y
                             tileset.tileWidth,tileset.tileHeight, //clipped img width, clipped img height
-                            w * tileset.tileWidth, h * tileset.tileHeight, //draw pos. x, draw pos. y
+                            tile.draw_position.x + offsetX, tile.draw_position.y + offsetY, //draw pos. x, draw pos. y
                             tileset.tileWidth, tileset.tileHeight //img width, img height (optinal)
                         );
                         Isometric_TMX_Parser.settings.ctx.closePath();
@@ -253,7 +268,7 @@ var Isometric_TMX_Parser = {
             tilesets : {
                 totalCount   : 0,
                 currentCount : 0,
-                baseDir : null
+                baseDir      : null
             },
             file : {
                 pureName : null
