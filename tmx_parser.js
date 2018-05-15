@@ -11,11 +11,19 @@
 //=============================================================================
 var TMX_Parser = {
     //-Functions
-    init : function(canvas,_debug){
-        if(_debug === null || typeof _debug === "undefined" || typeof _debug !== "boolean") _debug = false;
-        this.settings["ctx"]   = canvas.getContext("2d");
-        this.settings["debug"] = _debug; 
-        return;
+    init : function(canvas, draw_mode, _debug){
+        var _modes = [1, 2];
+
+        if(typeof _debug !== "boolean") _debug = false;
+        if(typeof draw_mode !== "number" || _modes.indexOf(draw_mode) === -1)
+        {
+            console.log("!!! - TMX Parser - Unkown draw mode.");
+            return false;
+        }
+
+        this.settings["ctx"]       = canvas.getContext("2d");
+        this.settings["debug"]     = _debug;
+        this.settings["draw_mode"] = draw_mode;
     },
     load : function(filePath, tilesetDirPath, _autoRun){
         if(_autoRun === null || typeof _autoRun === "undefined" || typeof _autoRun !== "boolean") _autoRun = false;
@@ -39,9 +47,9 @@ var TMX_Parser = {
                     data     : data,
                     status   : status
                 };
-                
+
                 TMX_Parser.watcher.all.tilesets.baseDir = tilesetDirPath;
-                
+
                 if(_autoRun)
                 {
                     if(TMX_Parser.watcher.switchFile(pureName))
@@ -116,10 +124,10 @@ var TMX_Parser = {
                 };
 
                 var orginalImg = tileset.getElementsByTagName("image")[0];
-                
+
                 var source = orginalImg.getAttribute("source").split("/");
                 source     = source[source.length - 1];
-                
+
                 var img    = new Image();
                 img.src    = TMX_Parser.watcher.all.tilesets.baseDir + source;
                 img.setAttribute("data-name",tilesetName);
@@ -132,7 +140,7 @@ var TMX_Parser = {
                 }
             }
 
-        }   
+        }
         else console.log("!!! - TMX Parser - Please load a file.");
     },
 
@@ -169,7 +177,7 @@ var TMX_Parser = {
     layers : {
         startRendering : function(){
             if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - Starting to rendering layer datas.");
-            
+
             //-Layers
             var layers = TMX_Parser.file.all[TMX_Parser.watcher.all.file.pureName].xml.getElementsByTagName("layer");
 
@@ -208,9 +216,14 @@ var TMX_Parser = {
             }
             if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - All layer datas rendered. For draw them on canvas, please run \"TMX_Parser.layers.draw()\" function.");
         },
-        draw : function(){
+        draw : function(offsetX, offsetY){
+            if(typeof offsetX !== "number")
+                offsetX = 0;
+            if(typeof offsetY !== "number")
+                offsetY = 0;
+
             if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - Drawing layers to the canvas.");
-            
+
             for( var layerName in TMX_Parser.layers.all[TMX_Parser.watcher.all.file.pureName] )
             {
                 if(!TMX_Parser.layers.all[TMX_Parser.watcher.all.file.pureName].hasOwnProperty(layerName)) continue;
@@ -228,10 +241,24 @@ var TMX_Parser = {
                         var posWidth    = layer.data[h][w] - tileset.firstgid;
                         var posHeight   = 0;
 
-                        if( posWidth > limitPerRow )
+                        if( posWidth >= limitPerRow )
                         {
                             posHeight = posHeight + Math.floor(posWidth / limitPerRow);
                             posWidth  = posWidth % limitPerRow;
+                        }
+
+                        var tile = {
+                            draw_position : {
+                                x : w * tileset.tileWidth,
+                                y : h * tileset.tileHeight
+                            }
+                        };
+
+                        //if draw mode isometric
+                        if(TMX_Parser.settings.draw_mode === 2)
+                        {
+                            tile.draw_position.x = tile.draw_position.x + (-(h+w) * (tileset.tileWidth/2));
+                            tile.draw_position.y = tile.draw_position.y + ((w-h)  * (tileset.tileHeight/2))
                         }
 
                         TMX_Parser.settings.ctx.beginPath();
@@ -239,7 +266,7 @@ var TMX_Parser = {
                             tileset.img, //img
                             posWidth * tileset.tileWidth, posHeight * tileset.tileHeight, //start crop x, start crop y
                             tileset.tileWidth,tileset.tileHeight, //clipped img width, clipped img height
-                            w * tileset.tileWidth, h * tileset.tileHeight, //draw pos. x, draw pos. y
+                            tile.draw_position.x + offsetX, tile.draw_position.y + offsetY, //draw pos. x, draw pos. y
                             tileset.tileWidth, tileset.tileHeight //img width, img height (optinal)
                         );
                         TMX_Parser.settings.ctx.closePath();
