@@ -11,7 +11,7 @@
 //=============================================================================
 var TMX_Parser = {
     //-Functions
-    init : function(canvas, draw_mode, _debug){
+    init : function(ctx, draw_mode, _debug){
         var _modes = [1, 2];
 
         if(typeof _debug !== "boolean") _debug = false;
@@ -21,7 +21,7 @@ var TMX_Parser = {
             return false;
         }
 
-        this.settings["ctx"]       = canvas.getContext("2d");
+        this.settings["ctx"]       = ctx;
         this.settings["debug"]     = _debug;
         this.settings["draw_mode"] = draw_mode;
     },
@@ -230,15 +230,15 @@ var TMX_Parser = {
 
                 var layer = TMX_Parser.layers.all[TMX_Parser.watcher.all.file.pureName][layerName];
 
-                for( var h=0; h < layer.data.length; h++ )
+                for( var y=0; y < layer.data.length; y++ )
                 {
-                    for( var w=0; w < layer.data[h].length; w++ )
+                    for( var x=0; x < layer.data[y].length; x++ )
                     {
-                        if(layer.data[h][w] === 0) continue;
+                        if(layer.data[y][x] === 0) continue;
 
-                        var tileset     = TMX_Parser.tilesets.which(layer.data[h][w]); //return: tileset
+                        var tileset     = TMX_Parser.tilesets.which(layer.data[y][x]); //return: tileset
                         var limitPerRow = tileset.img.width / tileset.tileWidth;
-                        var posWidth    = layer.data[h][w] - tileset.firstgid;
+                        var posWidth    = layer.data[y][x] - tileset.firstgid;
                         var posHeight   = 0;
 
                         if( posWidth >= limitPerRow )
@@ -249,16 +249,16 @@ var TMX_Parser = {
 
                         var tile = {
                             draw_position : {
-                                x : w * tileset.tileWidth,
-                                y : h * tileset.tileHeight
+                                x : x * tileset.tileWidth,
+                                y : y * tileset.tileHeight
                             }
                         };
 
                         //if draw mode isometric
                         if(TMX_Parser.settings.draw_mode === 2)
                         {
-                            tile.draw_position.x = tile.draw_position.x + (-(h+w) * (tileset.tileWidth/2));
-                            tile.draw_position.y = tile.draw_position.y + ((w-h)  * (tileset.tileHeight/2))
+                            //iso to draw coords conversition
+                            tile.draw_position = TMX_Parser.layers.IsoToCoords(x, y, tileset.tileWidth/2, tileset.tileHeight/2);
                         }
 
                         TMX_Parser.settings.ctx.beginPath();
@@ -273,6 +273,28 @@ var TMX_Parser = {
                     }
                 }
             }
+        },
+        IsoToCoords : function(x, y, tileWidthHalf, tileHeightHalf){
+            return {
+                x : (x - y) * tileWidthHalf,
+                y : (x + y) * tileHeightHalf
+            }
+        },
+        CoordsToIso : function(map_name, pageX, pageY, offsetX, offsetY){
+            var realX = pageX - offsetX - TMX_Parser.information[map_name].tileWidth/2;
+            var realY = pageY - offsetY;
+
+            var tileX = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) + (realX / TMX_Parser.information[map_name].tileWidth));
+            var tileY = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) - (realX / TMX_Parser.information[map_name].tileWidth));
+
+            return {
+                isoX : tileX,
+                isoY : tileY
+            };
+        },
+        findTileFromCoords : function(map_name, isoX, isoY){
+            var w = Math.floor(isoX / TMX_Parser.information[map_name].tileWidth);
+            var h = Math.floor(isoY / TMX_Parser.information[map_name].tileHeight);
         },
         all : {}
     },
