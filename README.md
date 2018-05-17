@@ -1,18 +1,19 @@
 # How To Use?
-- Initialize the parser:<br />
+Initialize the parser:<br />
 <b>TMX_Parser.init(canvas, draw_mode, debug);</b><br />
 <b>@param</b> canvas: Reference of canvas element. <b>[HTML Object]</b><br />
 <b>@param</b> draw_mode: Mode of Parser. (1: <b>Orthogonal</b>, 2: <b>Isometric</b>) <b>[number]</b><br />
 <b>@param</b> debug: are debug messages will be shown? <b>[true/false]</b> - default: <b>false</b><br /><br />
 --------------------------------------------------------------------<br /><br />
+Load the TMX file:<br />
 <b>TMX_Parser.load(pathOfFile,autoRun);</b><br />
 <b>@param</b> pathOfFile: Your file's path that will be parsed. <b>[string]</b><br />
 <b>@param</b> autoRun: Start parsing process automatically. <b>[true/false]</b> - default: <b>false</b><br /><br />
 --------------------------------------------------------------------<br /><br />
 <b>TMX_Parser.run();</b> # Run parsing process manually. <b>[void]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
-
-<b>TMX_Parser.draw(offsetX, offsetY);</b> # After layers rendered, run for drawing to canvas. (Function will be not fired automatically at currently. Call it manually please.) <b>[void]</b><br />
+Draw the map:<br />
+<b>TMX_Parser.draw(offsetX, offsetY);</b> # After layers rendered, run for drawing to canvas. (Function will be not fired automatically at currently. You must call it manually unless you don't handle the "<b>TMX_Parser_tileset_loaded</b>" event.) <b>[void]</b><br />
 <b>@param</b> offsetX: Offset from X. <b>[number]</b><br />
 <b>@param</b> offsetY: Offset from Y. <b>[number]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
