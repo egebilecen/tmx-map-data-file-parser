@@ -58,7 +58,7 @@ var TMX_Parser = {
                     else console.log("!!! - TMX Parser - File for switching is not found! ("+pureName+")");
                 }
             },
-            error    : function(){
+            error : function(){
                 console.log("!!! - TMX Parser - Cannot load file ("+filePath+").");
             }
         });
@@ -216,14 +216,71 @@ var TMX_Parser = {
                 };
             }
             if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - All layer datas rendered. For draw them on canvas, please run \"TMX_Parser.layers.draw()\" function.");
-        },
-        draw : function(offsetX, offsetY){
-            if(typeof offsetX !== "number")
-                offsetX = 0;
-            if(typeof offsetY !== "number")
-                offsetY = 0;
 
+            document.addEventListener("keydown", function(e){
+                var keyCode = e.keyCode;
+
+                switch (keyCode)
+                {
+                    case 87: // W
+                        TMX_Parser.keys.W.status = true;
+                    break;
+
+                    case 65: // A
+                        TMX_Parser.keys.A.status = true;
+                    break;
+
+                    case 83: // S
+                        TMX_Parser.keys.S.status = true;
+                    break;
+
+                    case 68: // D
+                        TMX_Parser.keys.D.status = true;
+                    break;
+                }
+            });
+
+            document.addEventListener("keyup", function(e){
+                var keyCode = e.keyCode;
+
+                switch (keyCode)
+                {
+                    case 87: // W
+                        TMX_Parser.keys.W.status = false;
+                    break;
+
+                    case 65: // A
+                        TMX_Parser.keys.A.status = false;
+                    break;
+
+                    case 83: // S
+                        TMX_Parser.keys.S.status = false;
+                    break;
+
+                    case 68: // D
+                        TMX_Parser.keys.D.status = false;
+                    break;
+                }
+            });
+
+            //-Create event
+            var event = document.createEvent("Event");
+            event.initEvent("TMX_Parser_layers_rendered");
+            event.information = { totalTileset : TMX_Parser.watcher.all.tilesets.totalCount, loadedTileset : TMX_Parser.watcher.all.tilesets.currentCount };
+            document.dispatchEvent(event);
+        },
+        draw : function(){
             if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - Drawing layers to the canvas.");
+
+            //Update offsets if key press present
+            if(TMX_Parser.keys.W.status)
+                TMX_Parser.camera.updateOffset(null, 1);
+            if(TMX_Parser.keys.S.status)
+                TMX_Parser.camera.updateOffset(null, 2);
+            if(TMX_Parser.keys.A.status)
+                TMX_Parser.camera.updateOffset(1, null);
+            if(TMX_Parser.keys.D.status)
+                TMX_Parser.camera.updateOffset(2, null);
 
             for( var layerName in TMX_Parser.layers.all[TMX_Parser.watcher.all.file.pureName] )
             {
@@ -262,12 +319,16 @@ var TMX_Parser = {
                             tile.draw_position = TMX_Parser.layers.IsoToCoords(x, y, tileset.tileWidth/2, tileset.tileHeight/2);
                         }
 
+                        //add offsets
+                        tile.draw_position.x += TMX_Parser.camera.offset.x;
+                        tile.draw_position.y += TMX_Parser.camera.offset.y;
+
                         TMX_Parser.settings.ctx.beginPath();
                         TMX_Parser.settings.ctx.drawImage(
                             tileset.img, //img
                             posWidth * tileset.tileWidth, posHeight * tileset.tileHeight, //start crop x, start crop y
                             tileset.tileWidth,tileset.tileHeight, //clipped img width, clipped img height
-                            tile.draw_position.x + offsetX, tile.draw_position.y + offsetY, //draw pos. x, draw pos. y
+                            tile.draw_position.x, tile.draw_position.y, //draw pos. x, draw pos. y
                             tileset.tileWidth, tileset.tileHeight //img width, img height (optinal)
                         );
                         TMX_Parser.settings.ctx.closePath();
@@ -351,6 +412,7 @@ var TMX_Parser = {
         switchFile : function(filePureName){
             if(TMX_Parser.file.all.hasOwnProperty(filePureName))
             {
+                TMX_Parser.camera.resetOffset();
                 this.all.file.pureName = filePureName;
                 return true;
             }
@@ -365,5 +427,55 @@ var TMX_Parser = {
         // data : null,
         // status : 0 // 0: not loaded, 1: loaded
     },
-    information : {} //gives general information
+    information : {}, //gives general information
+    camera : {
+        setOffset : function (x, y) {
+            if(typeof x !== "number")
+                x = TMX_Parser.camera.offset.x || 0;
+            if(typeof y !== "number")
+                y = TMX_Parser.camera.offset.y || 0;
+
+            TMX_Parser.camera.offset.x = x;
+            TMX_Parser.camera.offset.y = y;
+        },
+        resetOffset : function() {
+            TMX_Parser.camera.offset.x = 0;
+            TMX_Parser.camera.offset.y = 0;
+        },
+        updateOffset : function(x_direction, y_direction){
+            if(typeof x_direction !== "number")
+                x_direction = 0;
+            if(x_direction < 1 && x_direction > 2)
+                console.log("??? - TMX_Parser - updateOffset(): Wrong direction for X offset.");
+
+            if(typeof y_direction !== "number")
+                y_direction = 0;
+            if(y_direction < 1 && y_direction > 2)
+                console.log("??? - TMX_Parser - updateOffset(): Wrong direction for Y offset.");
+
+            if(x_direction === 1) //increase offset x
+                TMX_Parser.camera.setOffset(TMX_Parser.camera.offset.x + TMX_Parser.camera.speed.x,null);
+            else if(x_direction === 2) //decrease offset x
+                TMX_Parser.camera.setOffset(TMX_Parser.camera.offset.x - TMX_Parser.camera.speed.x,null);
+
+            if(y_direction === 1) //increase offset x
+                TMX_Parser.camera.setOffset(null, TMX_Parser.camera.offset.y + TMX_Parser.camera.speed.y);
+            else if(y_direction === 2) //decrease offset x
+                TMX_Parser.camera.setOffset(null, TMX_Parser.camera.offset.y - TMX_Parser.camera.speed.y);
+        },
+        offset : {
+            x : 0,
+            y : 0
+        },
+        speed : {
+            x : 10,
+            y : 10
+        }
+    },
+    keys : {
+        W : { status:false },
+        A : { status:false },
+        S : { status:false },
+        D : { status:false }
+    }
 };
