@@ -43,8 +43,37 @@ Get the clicked tile information:<br />
 <b>@param</b> isoX: Isometric X coordinate of cursor. <b>[number]</b><br />
 <b>@param</b> isoY: Isometric Y coordinate of cursor. <b>[number]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
+# Camera
+Camera offsets will be automatically applied when "draw()" function invoked.<br />
+Set offsets of x and y:<br />
+<b>TMX_Parser.setOffset(x, y);</b> <b>[void]</b><br />
+<b>@param</b> x: Distance based on X axis. <b>[number]</b><br />
+<b>@param</b> y: Distance based on Y axis. <b>[number]</b><br /><br />
+If <b>null</b> passed as paramater, old offset value will be keeped.<br />
+--------------------------------------------------------------------<br /><br />
+Set offset x and y to 0:<br />
+<b>TMX_Parser.resetOffset();</b> <b>[void]</b><br /><br />
+--------------------------------------------------------------------<br /><br />
+Update offset x and y based on <b>TMX_Parser.camera.speed.[X/Y]</b> values:<br />
+<b>TMX_Parser.updateOffset(x_direction, y_direction);</b> <b>[void]</b><br />
+<b>@param</b> x_direction: Can be <b>1</b> or <b>2</b>. <b>[number]</b><br />
+<b>@param</b> y_direction: Can be <b>1</b> or <b>2</b>. <b>[number]</b><br /><br />
+<b>1</b> is increment, <b>2</b> is abatement. Any value that is not a <b>number</b> will be treated as <b>do nothing</b>.<br />
+--------------------------------------------------------------------<br /><br />
+<b>Note:</b> If you want to change camera speed ...<br/>
+TMX_Parser.<b>camera.speed.x</b> = 10 # set your speed <br/>
+TMX_Parser.<b>camera.speed.y</b> = 10 # set your speed <br/>
+... do it in this way.<br /><br />
+--------------------------------------------------------------------<br /><br />
 # Events
 If you want to run specific function when image loaded, then add event listener on document named by "TMX_Parser_tileset_loaded" with param.<br/><br/>
 document.addEventListener("<b>TMX_Parser_tileset_loaded</b>",function(event){<br/>
     var information = event.information; //<b>@return: { totalTileset : X, loadedTileset : X }</b><br/>
-});
+});<br />
+--------------------------------------------------------------------<br /><br />
+After all tilesets loaded, layer rendering will be started. After layer rendering is over, "TMX_Parser_layers_rendered" event will be fired. After this event fired, it means everything is ready to draw tiles.<br/><br/>
+document.addEventListener("<b>TMX_Parser_layers_rendered</b>",function(event){<br/>
+    //example codes:<br />
+    TMX_Parser.camera.setOffset(250, 250);<br />
+    TMX_Parser.layers.draw();<br />
+});<br />
