@@ -49,6 +49,7 @@ var TMX_Parser = {
                 };
 
                 TMX_Parser.watcher.all.tilesets.baseDir = tilesetDirPath;
+                TMX_Parser.watcher.switchFile(pureName);
 
                 if(_autoRun)
                 {
@@ -63,7 +64,7 @@ var TMX_Parser = {
         });
     },
     run : function(){
-        var FILE = this.file.all[this.watcher.all.file.pureName];
+        var FILE = TMX_Parser.file.all[TMX_Parser.watcher.all.file.pureName];
         if( FILE.status === 1 )
         {
             if(this.settings.debug) console.log("??? - TMX Parser - Starting to parsing.");
@@ -292,9 +293,32 @@ var TMX_Parser = {
                 isoY : tileY
             };
         },
-        findTileFromCoords : function(map_name, isoX, isoY){
-            var w = Math.floor(isoX / TMX_Parser.information[map_name].tileWidth);
-            var h = Math.floor(isoY / TMX_Parser.information[map_name].tileHeight);
+        findTileFromIsoCoords : function(map_name, isoX, isoY){
+            var result = [];
+            var mapWidth  = TMX_Parser.information[map_name].mapWidth;
+            var mapHeight = TMX_Parser.information[map_name].mapHeight;
+
+            //check if iso coords in boundaries
+            if((isoX < 0 || isoX > mapWidth) || (isoY < 0 || isoY > mapHeight))
+                return false;
+
+            for(var layerName in TMX_Parser.layers.all[map_name])
+            {
+                var layer  = TMX_Parser.layers.all[map_name][layerName];
+                var tileId = layer.data[isoY][isoX];
+
+                if(tileId !== 0)
+                {
+                    result.push(
+                        {
+                            layerName : layerName,
+                            tileId    : tileId
+                        }
+                    );
+                }
+            }
+
+            return result;
         },
         all : {}
     },
