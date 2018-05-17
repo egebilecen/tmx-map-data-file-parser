@@ -1,5 +1,5 @@
 //=============================================================================
-// TMX File Parser v1.0 (Based on Tiled Map Editor)
+// TMX File Parser v2.0 (Based on Tiled Map Editor)
 // ----------------------------------------------------------------------------
 // Author : Ege Bilecen
 // Website: egebilecen.info
@@ -285,12 +285,22 @@ var TMX_Parser = {
             var realX = pageX - offsetX - TMX_Parser.information[map_name].tileWidth/2;
             var realY = pageY - offsetY;
 
-            var tileX = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) + (realX / TMX_Parser.information[map_name].tileWidth));
-            var tileY = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) - (realX / TMX_Parser.information[map_name].tileWidth));
+            var isoX = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) + (realX / TMX_Parser.information[map_name].tileWidth));
+            var isoY = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) - (realX / TMX_Parser.information[map_name].tileWidth));
+
+            if(isoX < 0)
+                isoX = 0;
+            else if(isoX > TMX_Parser.information[map_name].mapWidth)
+                isoX = TMX_Parser.information[map_name].mapWidth;
+
+            if(isoY < 0)
+                isoY = 0;
+            else if(isoY > TMX_Parser.information[map_name].mapHeight)
+                isoY = TMX_Parser.information[map_name].mapHeight;
 
             return {
-                isoX : tileX,
-                isoY : tileY
+                isoX : isoX,
+                isoY : isoY
             };
         },
         findTileFromIsoCoords : function(map_name, isoX, isoY){
