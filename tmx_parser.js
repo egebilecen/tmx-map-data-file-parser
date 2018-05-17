@@ -342,9 +342,9 @@ var TMX_Parser = {
                 y : (x + y) * tileHeightHalf
             }
         },
-        CoordsToIso : function(map_name, pageX, pageY, offsetX, offsetY){
-            var realX = pageX - offsetX - TMX_Parser.information[map_name].tileWidth/2;
-            var realY = pageY - offsetY;
+        CoordsToIso : function(map_name, pageX, pageY){
+            var realX = pageX - TMX_Parser.camera.offset.x - TMX_Parser.information[map_name].tileWidth/2;
+            var realY = pageY - TMX_Parser.camera.offset.y;
 
             var isoX = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) + (realX / TMX_Parser.information[map_name].tileWidth));
             var isoY = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) - (realX / TMX_Parser.information[map_name].tileWidth));
@@ -444,12 +444,12 @@ var TMX_Parser = {
         },
         updateOffset : function(x_direction, y_direction){
             if(typeof x_direction !== "number")
-                x_direction = 0;
+                x_direction = null;
             if(x_direction < 1 && x_direction > 2)
                 console.log("??? - TMX_Parser - updateOffset(): Wrong direction for X offset.");
 
             if(typeof y_direction !== "number")
-                y_direction = 0;
+                y_direction = null;
             if(y_direction < 1 && y_direction > 2)
                 console.log("??? - TMX_Parser - updateOffset(): Wrong direction for Y offset.");
 
