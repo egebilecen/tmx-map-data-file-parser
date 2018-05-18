@@ -275,10 +275,9 @@ var TMX_Parser = {
 
             TMX_Parser.settings.ctx.beginPath();
 
-            if(mode === 1)
-                TMX_Parser.settings.ctx.strokeStyle = style;
-            else if(mode === 2)
-                TMX_Parser.settings.ctx.fillStyle   = style;
+            TMX_Parser.settings.ctx.strokeStyle   = style;
+            if(mode === 2)
+                TMX_Parser.settings.ctx.fillStyle = style;
 
             //left
             TMX_Parser.settings.ctx.moveTo(x + tileWidth/2, y);
@@ -298,9 +297,8 @@ var TMX_Parser = {
 
             TMX_Parser.settings.ctx.closePath();
 
-            if(mode === 1)
-                TMX_Parser.settings.ctx.stroke();
-            else if(mode === 2)
+            TMX_Parser.settings.ctx.stroke();
+            if(mode === 2)
                 TMX_Parser.settings.ctx.fill();
         },
         draw : function(){
@@ -402,13 +400,13 @@ var TMX_Parser = {
 
             if(isoX < 0)
                 isoX = 0;
-            else if(isoX > TMX_Parser.information[map_name].mapWidth)
-                isoX = TMX_Parser.information[map_name].mapWidth;
+            else if(isoX > TMX_Parser.information[map_name].mapWidth - 1)
+                isoX = TMX_Parser.information[map_name].mapWidth - 1;
 
             if(isoY < 0)
                 isoY = 0;
-            else if(isoY > TMX_Parser.information[map_name].mapHeight)
-                isoY = TMX_Parser.information[map_name].mapHeight;
+            else if(isoY > TMX_Parser.information[map_name].mapHeight - 1)
+                isoY = TMX_Parser.information[map_name].mapHeight - 1;
 
             return {
                 isoX : isoX,
