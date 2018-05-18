@@ -269,6 +269,40 @@ var TMX_Parser = {
             event.information = { totalTileset : TMX_Parser.watcher.all.tilesets.totalCount, loadedTileset : TMX_Parser.watcher.all.tilesets.currentCount };
             document.dispatchEvent(event);
         },
+        drawGrid : function(x, y, tileWidth, tileHeight, style, mode){
+            //Modes:
+            // 1-Stroke, 2-Fill
+
+            TMX_Parser.settings.ctx.beginPath();
+
+            if(mode === 1)
+                TMX_Parser.settings.ctx.strokeStyle = style;
+            else if(mode === 2)
+                TMX_Parser.settings.ctx.fillStyle   = style;
+
+            //left
+            TMX_Parser.settings.ctx.moveTo(x + tileWidth/2, y);
+            TMX_Parser.settings.ctx.lineTo(x, y + tileHeight/2);
+
+            //top
+            TMX_Parser.settings.ctx.moveTo(x + tileWidth/2, y);
+            TMX_Parser.settings.ctx.lineTo(x + tileWidth, y + tileHeight/2);
+
+            //right
+            TMX_Parser.settings.ctx.moveTo(x + tileWidth, y + tileHeight/2);
+            TMX_Parser.settings.ctx.lineTo(x + tileWidth/2, y + tileHeight);
+
+            //bottom
+            TMX_Parser.settings.ctx.moveTo(x + tileWidth/2, y + tileHeight);
+            TMX_Parser.settings.ctx.lineTo(x, y + tileHeight/2);
+
+            TMX_Parser.settings.ctx.closePath();
+
+            if(mode === 1)
+                TMX_Parser.settings.ctx.stroke();
+            else if(mode === 2)
+                TMX_Parser.settings.ctx.fill();
+        },
         draw : function(){
             if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - Drawing layers to the canvas.");
 
@@ -332,6 +366,23 @@ var TMX_Parser = {
                             tileset.tileWidth, tileset.tileHeight //img width, img height (optinal)
                         );
                         TMX_Parser.settings.ctx.closePath();
+
+                        //draw grid if enabled
+                        if(TMX_Parser.grid.is_enable)
+                        {
+                            TMX_Parser.layers.drawGrid(tile.draw_position.x, tile.draw_position.y,
+                                                       tileset.tileWidth, tileset.tileHeight,
+                                                       TMX_Parser.grid.style, 1);
+                        }
+
+                        //if hover enabled
+                        if(TMX_Parser.grid.hover.is_enable)
+                        {
+                            var coords = TMX_Parser.layers.IsoToCoords(TMX_Parser.grid.hover.coords.isoX, TMX_Parser.grid.hover.coords.isoY, tileset.tileWidth/2, tileset.tileHeight/2);
+                            TMX_Parser.layers.drawGrid(coords.x + TMX_Parser.camera.offset.x, coords.y + TMX_Parser.camera.offset.y,
+                                                       tileset.tileWidth, tileset.tileHeight,
+                                                       TMX_Parser.grid.hover.style, 1);
+                        }
                     }
                 }
             }
@@ -477,5 +528,59 @@ var TMX_Parser = {
         A : { status:false },
         S : { status:false },
         D : { status:false }
+    },
+    grid : {
+        is_enable : 0,
+        style : {
+          color : "#000"
+        },
+        toggleGrid : function(){
+            switch (TMX_Parser.grid.is_enable)
+            {
+                case 1: //disable the grid
+                    TMX_Parser.grid.is_enable = 0;
+                break;
+
+                case 0: //enable the grid
+                    TMX_Parser.grid.is_enable = 1;
+                break;
+            }
+            return TMX_Parser.grid.is_enable;
+        },
+        setStyle : function(color) {
+            if(typeof color !== "string")
+                color = "#000";
+
+            TMX_Parser.grid.style.color = color;
+        },
+        hover : {
+            is_enable : 0,
+            style : {
+              color : "rgba(255,255,255,0.5)"
+            },
+            coords : {
+              isoX : 0,
+              isoY : 0
+            },
+            toggleHover : function () {
+                switch (TMX_Parser.grid.hover.is_enable)
+                {
+                    case 1: //disable the grid
+                        TMX_Parser.grid.hover.is_enable = 0;
+                        break;
+
+                    case 0: //enable the grid
+                        TMX_Parser.grid.hover.is_enable = 1;
+                        break;
+                }
+                return TMX_Parser.grid.hover.is_enable;
+            },
+            setStyle : function(color) {
+                if(typeof color !== "string")
+                    color = "#000";
+
+                TMX_Parser.grid.hover.style.color = color;
+            }
+        }
     }
 };
