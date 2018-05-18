@@ -291,19 +291,38 @@ var TMX_Parser = {
             if(mode === 2)
                 TMX_Parser.settings.ctx.fillStyle = style.color;
 
-            TMX_Parser.settings.ctx.moveTo(x + tileWidth/2, y);
+            if(TMX_Parser.settings.draw_mode === 1) //orthogonal
+            {
+                TMX_Parser.settings.ctx.moveTo(x, y);
 
-            //left
-            TMX_Parser.settings.ctx.lineTo(x + tileWidth, y + tileHeight/2);
+                //left
+                TMX_Parser.settings.ctx.lineTo(x, y + tileHeight);
 
-            //top
-            TMX_Parser.settings.ctx.lineTo(x + tileWidth, y + tileHeight/2);
+                //bottom
+                TMX_Parser.settings.ctx.lineTo(x + tileWidth, y + tileHeight);
 
-            //right
-            TMX_Parser.settings.ctx.lineTo(x + tileWidth/2, y + tileHeight);
+                //right
+                TMX_Parser.settings.ctx.lineTo(x + tileWidth, y);
 
-            //bottom
-            TMX_Parser.settings.ctx.lineTo(x, y + tileHeight/2);
+                //top
+                TMX_Parser.settings.ctx.lineTo(x, y);
+            }
+            else if(TMX_Parser.settings.draw_mode === 2) //isometric
+            {
+                TMX_Parser.settings.ctx.moveTo(x + tileWidth/2, y);
+
+                //left
+                TMX_Parser.settings.ctx.lineTo(x + tileWidth, y + tileHeight/2);
+
+                //top
+                TMX_Parser.settings.ctx.lineTo(x + tileWidth, y + tileHeight/2);
+
+                //right
+                TMX_Parser.settings.ctx.lineTo(x + tileWidth/2, y + tileHeight);
+
+                //bottom
+                TMX_Parser.settings.ctx.lineTo(x, y + tileHeight/2);
+            }
 
             TMX_Parser.settings.ctx.closePath();
 
@@ -360,7 +379,7 @@ var TMX_Parser = {
                         if(TMX_Parser.settings.draw_mode === 2)
                         {
                             //iso to draw coords conversition
-                            tile.draw_position = TMX_Parser.layers.IsoToCoords(x, y, tileset.tileWidth/2, tileset.tileHeight/2);
+                            tile.draw_position = TMX_Parser.layers.CellToCoords(x, y, tileset.tileWidth, tileset.tileHeight);
                         }
 
                         //add offsets
@@ -387,56 +406,92 @@ var TMX_Parser = {
                     }
                 }
             }
+
             //if hover enabled
             if(TMX_Parser.grid.hover.is_enable)
             {
-                var coords = TMX_Parser.layers.IsoToCoords(TMX_Parser.grid.hover.coords.isoX, TMX_Parser.grid.hover.coords.isoY, tileset.tileWidth/2, tileset.tileHeight/2);
+                var coords = TMX_Parser.layers.CellToCoords(TMX_Parser.grid.hover.coords.cellX, TMX_Parser.grid.hover.coords.cellY, tileset.tileWidth, tileset.tileHeight);
                 TMX_Parser.layers.drawGrid(coords.x + TMX_Parser.camera.offset.x, coords.y + TMX_Parser.camera.offset.y,
                     tileset.tileWidth, tileset.tileHeight,
                     TMX_Parser.grid.hover.style, 2);
             }
         },
-        IsoToCoords : function(x, y, tileWidthHalf, tileHeightHalf){
-            return {
-                x : (x - y) * tileWidthHalf,
-                y : (x + y) * tileHeightHalf
+        CellToCoords : function(x, y, tileWidth, tileHeight){
+            if(TMX_Parser.settings.draw_mode === 1)
+            {
+                return {
+                    x : x * tileWidth,
+                    y : y * tileHeight
+                };
+            }
+            else if(TMX_Parser.settings.draw_mode === 2)
+            {
+                return {
+                    x : (x - y) * tileWidth / 2,
+                    y : (x + y) * tileHeight / 2
+                };
             }
         },
-        CoordsToIso : function(map_name, pageX, pageY){
-            var realX = pageX - TMX_Parser.camera.offset.x - TMX_Parser.information[map_name].tileWidth/2;
+        CoordsToCell : function(map_name, pageX, pageY){
+            var realX = pageX - TMX_Parser.camera.offset.x;
             var realY = pageY - TMX_Parser.camera.offset.y;
 
-            var isoX = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) + (realX / TMX_Parser.information[map_name].tileWidth));
-            var isoY = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) - (realX / TMX_Parser.information[map_name].tileWidth));
+            if(TMX_Parser.settings.draw_mode === 1)
+            {
+                var cellX = Math.floor(realX / TMX_Parser.information[map_name].tileWidth);
+                var cellY = Math.floor(realY / TMX_Parser.information[map_name].tileHeight);
 
-            if(isoX < 0)
-                isoX = 0;
-            else if(isoX > TMX_Parser.information[map_name].mapWidth - 1)
-                isoX = TMX_Parser.information[map_name].mapWidth - 1;
+                if(cellX < 0)
+                    cellX = 0;
+                else if(cellX > TMX_Parser.information[map_name].mapWidth - 1)
+                    cellX = TMX_Parser.information[map_name].mapWidth - 1;
 
-            if(isoY < 0)
-                isoY = 0;
-            else if(isoY > TMX_Parser.information[map_name].mapHeight - 1)
-                isoY = TMX_Parser.information[map_name].mapHeight - 1;
+                if(cellY < 0)
+                    cellY = 0;
+                else if(cellY> TMX_Parser.information[map_name].mapHeight - 1)
+                    cellY = TMX_Parser.information[map_name].mapHeight - 1;
 
-            return {
-                isoX : isoX,
-                isoY : isoY
-            };
+                return {
+                    cellX : cellX,
+                    cellY : cellY
+                };
+            }
+            else if(TMX_Parser.settings.draw_mode === 2)
+            {
+                realX  -= TMX_Parser.information[map_name].tileWidth/2;
+
+                var isoX = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) + (realX / TMX_Parser.information[map_name].tileWidth));
+                var isoY = Math.floor((realY / TMX_Parser.information[map_name].tileHeight) - (realX / TMX_Parser.information[map_name].tileWidth));
+
+                if(isoX < 0)
+                    isoX = 0;
+                else if(isoX > TMX_Parser.information[map_name].mapWidth - 1)
+                    isoX = TMX_Parser.information[map_name].mapWidth - 1;
+
+                if(isoY < 0)
+                    isoY = 0;
+                else if(isoY > TMX_Parser.information[map_name].mapHeight - 1)
+                    isoY = TMX_Parser.information[map_name].mapHeight - 1;
+
+                return {
+                    cellX : isoX,
+                    cellY : isoY
+                };
+            }
         },
-        findTileFromIsoCoords : function(map_name, isoX, isoY){
+        findTileFromCellCoords : function(map_name, cellX, cellY){
             var result = [];
             var mapWidth  = TMX_Parser.information[map_name].mapWidth;
             var mapHeight = TMX_Parser.information[map_name].mapHeight;
 
             //check if iso coords in boundaries
-            if((isoX < 0 || isoX > mapWidth) || (isoY < 0 || isoY > mapHeight))
+            if((cellX < 0 || cellX > mapWidth) || (cellY < 0 || cellY > mapHeight))
                 return false;
 
             for(var layerName in TMX_Parser.layers.all[map_name])
             {
                 var layer  = TMX_Parser.layers.all[map_name][layerName];
-                var tileId = layer.data[isoY][isoX];
+                var tileId = layer.data[cellY][cellX];
 
                 if(tileId !== 0)
                 {
@@ -577,8 +632,8 @@ var TMX_Parser = {
               alpha : 1.0
             },
             coords : {
-              isoX : 0,
-              isoY : 0
+              cellX : 0,
+              cellY : 0
             },
             toggleHover : function () {
                 switch (TMX_Parser.grid.hover.is_enable)
