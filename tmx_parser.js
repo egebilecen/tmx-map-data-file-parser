@@ -12,21 +12,25 @@
 var TMX_Parser = {
     //-Functions
     init : function(ctx, draw_mode, _debug){
-        var _modes = [1, 2];
-
         if(typeof _debug !== "boolean") _debug = false;
-        if(typeof draw_mode !== "number" || _modes.indexOf(draw_mode) === -1)
+
+        this.settings["ctx"]   = ctx;
+        this.settings["debug"] = _debug;
+        this.changeDrawMode(draw_mode);
+    },
+    changeDrawMode : function(mode) {
+        var _modes = [1, 2];
+        if(typeof mode !== "number" || _modes.indexOf(mode) === -1)
         {
             console.log("!!! - TMX Parser - Unkown draw mode.");
             return false;
         }
 
-        this.settings["ctx"]       = ctx;
-        this.settings["debug"]     = _debug;
-        this.settings["draw_mode"] = draw_mode;
+        this.settings["draw_mode"] = mode;
     },
     load : function(filePath, tilesetDirPath, _autoRun){
         if(_autoRun === null || typeof _autoRun === "undefined" || typeof _autoRun !== "boolean") _autoRun = false;
+        TMX_Parser.watcher.all.maps.totalCount++;
         $.ajax({
             url  : filePath,
             type : "get",
@@ -50,6 +54,14 @@ var TMX_Parser = {
 
                 TMX_Parser.watcher.all.tilesets.baseDir = tilesetDirPath;
                 TMX_Parser.watcher.switchFile(pureName);
+
+                TMX_Parser.watcher.all.maps.currentCount++;
+
+                //create event
+                TMX_Parser.createNewEvent("TMX_Parser_map_loaded", "information", {
+                    totalMap   : TMX_Parser.watcher.all.maps.totalCount,
+                    currentMap : TMX_Parser.watcher.all.maps.currentCount
+                });
 
                 if(_autoRun)
                 {
@@ -168,10 +180,10 @@ var TMX_Parser = {
             }
 
             //-Create event
-            var event = document.createEvent("Event");
-            event.initEvent("TMX_Parser_tileset_loaded");
-            event.information = { totalTileset : TMX_Parser.watcher.all.tilesets.totalCount, loadedTileset : TMX_Parser.watcher.all.tilesets.currentCount };
-            document.dispatchEvent(event);
+            TMX_Parser.createNewEvent("TMX_Parser_tileset_loaded", "information", {
+                totalTileset : TMX_Parser.watcher.all.tilesets.totalCount,
+                loadedTileset : TMX_Parser.watcher.all.tilesets.currentCount
+            });
         },
         all : {}
     },
@@ -264,10 +276,7 @@ var TMX_Parser = {
             });
 
             //-Create event
-            var event = document.createEvent("Event");
-            event.initEvent("TMX_Parser_layers_rendered");
-            event.information = { totalTileset : TMX_Parser.watcher.all.tilesets.totalCount, loadedTileset : TMX_Parser.watcher.all.tilesets.currentCount };
-            document.dispatchEvent(event);
+            TMX_Parser.createNewEvent("TMX_Parser_layers_rendered");
         },
         drawGrid : function(x, y, tileWidth, tileHeight, style, mode){
             //Modes:
@@ -446,6 +455,10 @@ var TMX_Parser = {
     },
     watcher  : {
         all : {
+            maps : {
+              totalCount : 0,
+              currentCount : 0
+            },
             tilesets : {
                 totalCount   : 0,
                 currentCount : 0,
@@ -464,7 +477,7 @@ var TMX_Parser = {
             if(TMX_Parser.file.all.hasOwnProperty(filePureName))
             {
                 TMX_Parser.camera.resetOffset();
-                this.all.file.pureName = filePureName;
+                TMX_Parser.watcher.all.file.pureName = filePureName;
                 return true;
             }
             else return false;
@@ -590,5 +603,18 @@ var TMX_Parser = {
                 TMX_Parser.grid.hover.style.alpha = alpha;
             }
         }
+    },
+    createNewEvent : function (event_name, property, data) {
+        if(typeof property !== "string")
+            property = null;
+        if(typeof data !== "object")
+            data = {};
+
+        //-Create event
+        var event = document.createEvent("Event");
+        event.initEvent(event_name);
+        if(property !== null)
+            event[property] = data;
+        document.dispatchEvent(event);
     }
 };
