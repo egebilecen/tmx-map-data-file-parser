@@ -71,6 +71,11 @@ TMX_Parser.<b>camera.speed.y</b> = 10 # set your speed <br/>
 If you want to run specific function when image loaded, then add event listener on document named by "TMX_Parser_tileset_loaded" with param.<br/><br/>
 document.addEventListener("<b>TMX_Parser_tileset_loaded</b>",function(event){<br/>
     var information = event.information; //<b>@return: { totalTileset : X, loadedTileset : X }</b><br/>
+});<br /><br />
+--------------------------------------------------------------------<br /><br />
+Affter a map loaded to memory, "TMX_Parser_map_loaded" event will be fired.<br />
+document.addEventListener("<b>TMX_Parser_map_loaded</b>",function(event){<br/>
+    var information = event.information; //<b>@return: { totalMap : X, loadedMap : X }</b><br/>
 });<br />
 --------------------------------------------------------------------<br /><br />
 After all tilesets loaded, layer rendering will be started. After layer rendering is over, "TMX_Parser_layers_rendered" event will be fired. After this event fired, it means everything is ready to draw tiles.<br/><br/>
