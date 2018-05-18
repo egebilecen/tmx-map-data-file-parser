@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>TMX_Parser Example Usage</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="tmx_parser.js"></script>
+</head>
+<body style="margin:0;">
+    <canvas style="background: black;" id="canvas"></canvas>
+    <canvas style="position: absolute;left:0;top:0;" id="upper-canvas"></canvas>
+
+    <div style="padding:2px;font-family: Arial;position:absolute; right: 0; bottom: 0; width: 250px;height: 65px;background: white;color:black;">
+        <div style="display:block;">
+            OffsetX: <span id="offsetX">0</span> | OffsetY: <span id="offsetY">0</span>
+        </div>
+        <div style="display:block;">
+            MouseX: <span id="mouseX">0</span> | MouseY: <span id="mouseY">0</span>
+        </div>
+        <div style="display:block;">
+            CellX: <span id="cellX">0</span> | CellY: <span id="cellY">0</span>
+        </div>
+    </div>
+
+    <script>
+        var canvas = document.getElementById("canvas");
+        var ctx    = canvas.getContext("2d");
+
+        var upper_canvas = document.getElementById("upper-canvas");
+        var upper_ctx    = upper_canvas.getContext("2d");
+
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight-1;
+
+        upper_canvas.width  = window.innerWidth;
+        upper_canvas.height = window.innerHeight-1;
+
+        var draw_mode = 2;
+
+        TMX_Parser.init(ctx, draw_mode, false);
+        TMX_Parser.load("src/test2.tmx", "src/tilesets/", false);
+        TMX_Parser.load("src/test.tmx", "src/tilesets/", false);
+        TMX_Parser.load("src/ortho.tmx", "src/tilesets/", false);
+
+        document.addEventListener("TMX_Parser_map_loaded", function(res){
+            if(res.information.currentMap === res.information.totalMap)
+            {
+                TMX_Parser.changeDrawMode(2);
+                TMX_Parser.watcher.switchFile("test");
+                TMX_Parser.run();
+
+                var current_map = "test";
+
+                var draw_interval;
+
+                var offsetX_elem = document.querySelector("#offsetX");
+                var offsetY_elem = document.querySelector("#offsetY");
+
+                function draw_game(){
+                    //html
+                    if(TMX_Parser.camera.offset.x !== parseInt(offsetX_elem.innerHTML))
+                        offsetX_elem.innerHTML = TMX_Parser.camera.offset.x;
+
+                    if(TMX_Parser.camera.offset.y !== parseInt(offsetY_elem.innerHTML))
+                        offsetY_elem.innerHTML = TMX_Parser.camera.offset.y;
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    upper_ctx.clearRect(0, 0, upper_canvas.width, upper_canvas.height);
+                    TMX_Parser.layers.draw();
+                }
+
+                document.addEventListener("TMX_Parser_layers_rendered", function(res){
+                    TMX_Parser.camera.setOffset(520 , 250);
+                    TMX_Parser.grid.hover.setStyle("black", 0.5);
+                    TMX_Parser.grid.hover.toggleHover();
+                    draw_interval = setInterval(function () {
+                        draw_game();
+                    }, 1000 / 60);
+                });
+
+                var mouseX_elem = document.querySelector("#mouseX");
+                var mouseY_elem = document.querySelector("#mouseY");
+
+                var gridX_elem = document.querySelector("#cellX");
+                var gridY_elem = document.querySelector("#cellY");
+
+                document.addEventListener("mousemove", function(e){
+                    if(e.pageX !== parseInt(mouseX_elem.innerHTML))
+                        mouseX_elem.innerHTML = e.pageX;
+
+                    if(e.pageY !== parseInt(mouseY_elem.innerHTML))
+                        mouseY_elem.innerHTML = e.pageY;
+
+                    var gridCoords = TMX_Parser.layers.CoordsToCell(current_map, e.pageX, e.pageY);
+                    TMX_Parser.grid.hover.coords.cellX = gridCoords.cellX;
+                    TMX_Parser.grid.hover.coords.cellY = gridCoords.cellY;
+
+                    if(gridCoords.isoX !== parseInt(gridX_elem.innerHTML))
+                        gridX_elem.innerHTML = gridCoords.cellX;
+
+                    if(gridCoords.isoY !== parseInt(gridY_elem.innerHTML))
+                        gridY_elem.innerHTML = gridCoords.cellY;
+                });
+
+                document.addEventListener("click", function(e){
+                    var pageX = e.pageX;
+                    var pageY = e.pageY;
+
+                    var isoCoords = TMX_Parser.layers.CoordsToCell(current_map, pageX, pageY);
+                    var res = TMX_Parser.layers.findTileFromCellCoords(current_map, isoCoords.cellX, isoCoords.cellY);
+                    console.log(res);
+                });
+
+                window.onfocus = function () {
+                    draw_interval = setInterval(function () {
+                        draw_game();
+                    }, 1000/60);
+                };
+
+                window.onblur = function () {
+                    clearInterval(draw_interval);
+                };
+            }
+        });
+    </script>
+</body>
+</html>
