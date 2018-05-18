@@ -5,6 +5,10 @@ Initialize the parser:<br />
 <b>@param</b> draw_mode: Mode of Parser. (1: <b>Orthogonal</b>, 2: <b>Isometric</b>) <b>[number]</b><br />
 <b>@param</b> debug: are debug messages will be shown? <b>[true/false]</b> - default: <b>false</b><br /><br />
 --------------------------------------------------------------------<br /><br />
+Change draw mode:<br />
+<b>TMX_Parser.changeDrawMode(mode);</b><br />
+<b>@param</b> mode: Mode of Parser. (1: <b>Orthogonal</b>, 2: <b>Isometric</b>) <b>[number]</b><br /><br />
+--------------------------------------------------------------------<br /><br />
 Load the TMX file:<br />
 <b>TMX_Parser.load(pathOfFile,autoRun);</b><br />
 <b>@param</b> pathOfFile: Your file's path that will be parsed. <b>[string]</b><br />
@@ -23,25 +27,23 @@ Draw the map:<br />
 <b>@return: </b> <b>true</b> if successfully switched, <b>false</b> on error.<br/><br />
 --------------------------------------------------------------------<br /><br />
 Convert Isometric coordinates to Page coordinates:<br />
-<b>TMX_Parser.IsoToCoords(x, y, tileWidthHalf, tileHeightHalf);</b> <b>[object]</b><br />
+<b>TMX_Parser.IsoToCoords(x, y, tileWidth, tileHeight);</b> <b>[object]</b><br />
 <b>@param</b> x: Map matrix X position. <b>[number]</b><br />
 <b>@param</b> y: Map matrix Y position. <b>[number]</b><br />
-<b>@param</b> tileWidthHalf: Half of tile width. <b>[number]</b><br />
-<b>@param</b> tileHeightHalf: Half of tile height. <b>[number]</b><br /><br />
+<b>@param</b> tileWidth : Tile width. <b>[number]</b><br />
+<b>@param</b> tileHeight: Tile height. <b>[number]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
 Convert Page coordinates to Isometric coordinates:<br />
-<b>TMX_Parser.IsoToCoords(x, y, tileWidthHalf, tileHeightHalf);</b> <b>[object]</b><br />
+<b>TMX_Parser.CoordsToCell(map_name, pageX, pageY);</b> <b>[object]</b><br />
 <b>@param</b> map_name: Pure name of TMX file <b>[string]</b><br />
 <b>@param</b> pageX: X position of mouse cursor at page. <b>[number]</b><br />
 <b>@param</b> pageY: Y position of mouse cursor at page. <b>[number]</b><br />
-<b>@param</b> offsetX: Offset from X. <b>[number]</b><br />
-<b>@param</b> offsetY: Offset from Y. <b>[number]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
 Get the clicked tile information:<br />
-<b>TMX_Parser.findTileFromIsoCoords(map_name, isoX, isoY);</b> <b>[object]</b><br />
+<b>TMX_Parser.findTileFromCellCoords(map_name, cellX, cellY);</b> <b>[object]</b><br />
 <b>@param</b> map_name: Pure name of TMX file <b>[string]</b><br />
-<b>@param</b> isoX: Isometric X coordinate of cursor. <b>[number]</b><br />
-<b>@param</b> isoY: Isometric Y coordinate of cursor. <b>[number]</b><br /><br />
+<b>@param</b> cellX: Cell X coordinate of cursor. <b>[number]</b><br />
+<b>@param</b> cellY: Cell Y coordinate of cursor. <b>[number]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
 # Camera
 Camera offsets will be automatically applied when "draw()" function invoked.<br />
