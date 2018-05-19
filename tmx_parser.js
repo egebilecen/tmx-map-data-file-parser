@@ -60,7 +60,7 @@ var TMX_Parser = {
                 //create event
                 TMX_Parser.createNewEvent("TMX_Parser_map_loaded", "information", {
                     totalMap   : TMX_Parser.watcher.all.maps.totalCount,
-                    currentMap : TMX_Parser.watcher.all.maps.currentCount
+                    loadedMap  : TMX_Parser.watcher.all.maps.currentCount
                 });
 
                 if(_autoRun)
@@ -385,6 +385,19 @@ var TMX_Parser = {
                         //add offsets
                         tile.draw_position.x += TMX_Parser.camera.offset.x;
                         tile.draw_position.y += TMX_Parser.camera.offset.y;
+
+                        //check if this tile visible on screen
+                        var check_x = tile.draw_position.x;
+                        var check_y = tile.draw_position.y;
+
+                        if( //if not visible, just pass it
+                            check_x < -tileset.tileWidth || check_x > TMX_Parser.settings.ctx.canvas.width
+                            ||
+                            check_y < -tileset.tileHeight || check_y > TMX_Parser.settings.ctx.canvas.height
+                        )
+                        {
+                            continue;
+                        }
 
                         TMX_Parser.settings.ctx.beginPath();
                         TMX_Parser.settings.ctx.drawImage(
