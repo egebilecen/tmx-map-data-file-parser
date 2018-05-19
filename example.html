@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-    <title>TMX_Parser Example Usage</title>
+    <title>Test Area</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="tmx_parser.js"></script>
 </head>
@@ -36,6 +36,7 @@
         upper_canvas.width  = window.innerWidth;
         upper_canvas.height = window.innerHeight-1;
 
+        var current_map = "ortho";
         var draw_mode = 2;
 
         TMX_Parser.init(ctx, draw_mode, false);
@@ -44,13 +45,11 @@
         TMX_Parser.load("src/ortho.tmx", "src/tilesets/", false);
 
         document.addEventListener("TMX_Parser_map_loaded", function(res){
-            if(res.information.currentMap === res.information.totalMap)
+            if(res.information.loadedMap === res.information.totalMap)
             {
-                TMX_Parser.changeDrawMode(2);
-                TMX_Parser.watcher.switchFile("test");
+                TMX_Parser.changeDrawMode(1);
+                TMX_Parser.watcher.switchFile(current_map);
                 TMX_Parser.run();
-
-                var current_map = "test";
 
                 var draw_interval;
 
@@ -72,7 +71,7 @@
 
                 document.addEventListener("TMX_Parser_layers_rendered", function(res){
                     TMX_Parser.camera.setOffset(520 , 250);
-                    TMX_Parser.grid.hover.setStyle("black", 0.5);
+                    TMX_Parser.grid.hover.setStyle("white", 0.15);
                     TMX_Parser.grid.hover.toggleHover();
                     draw_interval = setInterval(function () {
                         draw_game();
