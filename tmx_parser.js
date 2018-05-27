@@ -375,6 +375,14 @@ var TMX_Parser = {
                             posWidth  = posWidth % limitPerRow;
                         }
 
+                        if(TMX_Parser.camera.zoom.is_enable)
+                        {
+                            var _scale = {
+                                x : TMX_Parser.camera.zoom.current.scale.x,
+                                y : TMX_Parser.camera.zoom.current.scale.y
+                            };
+                        }
+
                         var tile = {
                             draw_position : {
                                 x : x * tileset.tileWidth,
@@ -394,13 +402,10 @@ var TMX_Parser = {
                         tile.draw_position.y += TMX_Parser.camera.offset.y;
 
                         //check if this tile visible on screen
-                        var check_x = tile.draw_position.x;
-                        var check_y = tile.draw_position.y;
-
                         if( //if not visible, just pass it
-                            check_x < -tileset.tileWidth || check_x > TMX_Parser.settings.ctx.canvas.width
+                            tile.draw_position.x < -tileset.tileWidth || tile.draw_position.x > TMX_Parser.settings.ctx.canvas.width
                             ||
-                            check_y < -tileset.tileHeight || check_y > TMX_Parser.settings.ctx.canvas.height
+                            tile.draw_position.y < -tileset.tileHeight || tile.draw_position.y > TMX_Parser.settings.ctx.canvas.height
                         )
                         {
                             continue;
@@ -409,7 +414,7 @@ var TMX_Parser = {
                         if(TMX_Parser.camera.zoom.is_enable)
                         {
                             TMX_Parser.settings.ctx.save();
-                            TMX_Parser.settings.ctx.scale(TMX_Parser.camera.zoom.current.scale.x, TMX_Parser.camera.zoom.current.scale.y);
+                            TMX_Parser.settings.ctx.scale(_scale.x, _scale.y);
                             // TMX_Parser.settings.ctx.translate(x,y);
                         }
                         TMX_Parser.settings.ctx.beginPath();
@@ -461,6 +466,12 @@ var TMX_Parser = {
             }
         },
         CoordsToCell : function(map_name, pageX, pageY){
+            if(TMX_Parser.camera.zoom.is_enable)
+            {
+                pageX = pageX / TMX_Parser.camera.zoom.current.scale.x;
+                pageY = pageY / TMX_Parser.camera.zoom.current.scale.y;
+            }
+
             var realX = pageX - TMX_Parser.camera.offset.x;
             var realY = pageY - TMX_Parser.camera.offset.y;
 
