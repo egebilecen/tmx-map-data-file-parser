@@ -1,5 +1,5 @@
 //=============================================================================
-// TMX File Parser v2.0 (Based on Tiled Map Editor)
+// TMX Map Data Parser + Camera Control
 // ----------------------------------------------------------------------------
 // Author : Ege Bilecen
 // Website: egebilecen.info
@@ -282,7 +282,11 @@ var TMX_Parser = {
             //Modes:
             // 1-Stroke, 2-Fill
             //@param style: {color:"#XXX", alpha:1.0}
-
+            if(TMX_Parser.camera.zoom.is_enable)
+            {
+                TMX_Parser.settings.ctx.save();
+                TMX_Parser.settings.ctx.scale(TMX_Parser.camera.zoom.current.scale.x, TMX_Parser.camera.zoom.current.scale.y);
+            }
             TMX_Parser.settings.ctx.beginPath();
 
             TMX_Parser.settings.ctx.globalAlpha   = style.alpha;
@@ -329,6 +333,9 @@ var TMX_Parser = {
             TMX_Parser.settings.ctx.stroke();
             if(mode === 2)
                 TMX_Parser.settings.ctx.fill();
+
+            if(TMX_Parser.camera.zoom.is_enable)
+                TMX_Parser.settings.ctx.restore();
 
             TMX_Parser.settings.ctx.globalAlpha = 1.0;
         },
@@ -399,6 +406,12 @@ var TMX_Parser = {
                             continue;
                         }
 
+                        if(TMX_Parser.camera.zoom.is_enable)
+                        {
+                            TMX_Parser.settings.ctx.save();
+                            TMX_Parser.settings.ctx.scale(TMX_Parser.camera.zoom.current.scale.x, TMX_Parser.camera.zoom.current.scale.y);
+                            // TMX_Parser.settings.ctx.translate(x,y);
+                        }
                         TMX_Parser.settings.ctx.beginPath();
                         TMX_Parser.settings.ctx.drawImage(
                             tileset.img, //img
@@ -408,6 +421,8 @@ var TMX_Parser = {
                             tileset.tileWidth, tileset.tileHeight //img width, img height (optinal)
                         );
                         TMX_Parser.settings.ctx.closePath();
+                        if(TMX_Parser.camera.zoom.is_enable)
+                            TMX_Parser.settings.ctx.restore();
 
                         //draw grid if enabled
                         if(TMX_Parser.grid.is_enable)
@@ -604,7 +619,21 @@ var TMX_Parser = {
             y : 10
         },
         zoom : {
-            setLimit : function(z_in, z_out){
+            is_enable : 0,
+            toggleZoom : function(){
+                switch (TMX_Parser.camera.zoom.is_enable)
+                {
+                    case 1: //disable the grid
+                        TMX_Parser.camera.zoom.is_enable = 0;
+                        break;
+
+                    case 0: //enable the grid
+                        TMX_Parser.camera.zoom.is_enable = 1;
+                        break;
+                }
+                return TMX_Parser.camera.zoom.is_enable;
+            },
+            setLimit   : function(z_in, z_out){
                 if(typeof z_in !== "number")
                     z_in = 3;
                 if(typeof z_out !== "number")
