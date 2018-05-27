@@ -602,6 +602,73 @@ var TMX_Parser = {
         speed : {
             x : 10,
             y : 10
+        },
+        zoom : {
+            setLimit : function(z_in, z_out){
+                if(typeof z_in !== "number")
+                    z_in = 3;
+                if(typeof z_out !== "number")
+                    z_out = 3;
+
+                TMX_Parser.camera.zoom.limit.in  = z_in;
+                TMX_Parser.camera.zoom.limit.out = z_out;
+            },
+            resetZoom : function(){
+                TMX_Parser.camera.zoom.current.level = 0;
+            },
+            setScaleRatio : function(x, y){
+                if(typeof x !== "number")
+                    x = 0.5;
+                if(typeof y !== "number")
+                    y = 0.5;
+
+                if(typeof x <= 0 || typeof y <= 0)
+                    return false;
+
+                TMX_Parser.camera.zoom.scaleRatio.x = x;
+                TMX_Parser.camera.zoom.scaleRatio.y = y;
+
+                return true;
+            },
+            setZoomLevel : function(level){
+                var zoom_direction = (level < TMX_Parser.camera.zoom.current.level) ? "out" : "in";
+
+                if(typeof level !== "number")
+                    return false;
+
+                if(Math.abs(level) >= 0 && Math.abs(level) <= TMX_Parser.camera.zoom.limit[zoom_direction])
+                    TMX_Parser.camera.zoom.current.level = level;
+                else
+                    return -1;
+
+                TMX_Parser.camera.zoom.current.scale.x = TMX_Parser.camera.zoom.baseScale.x + (level * TMX_Parser.camera.zoom.scaleRatio.x);
+                TMX_Parser.camera.zoom.current.scale.y = TMX_Parser.camera.zoom.baseScale.y + (level * TMX_Parser.camera.zoom.scaleRatio.y);
+
+                return true;
+            },
+            limit   : { //zoom-in and zoom-out limit
+                in  : 3,
+                out : 3
+            },
+            current : {
+                level : 0, //zoom-in > 0, zoom-out < 0
+                translate : {
+                    x : 0,
+                    y : 0
+                },
+                scale : {
+                    x : 1.0,
+                    y : 1.0
+                }
+            },
+            baseScale : {
+                x : 1.0,
+                y : 1.0
+            },
+            scaleRatio : {
+                x : 0.25,
+                y : 0.25
+            }
         }
     },
     keys : {
