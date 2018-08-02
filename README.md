@@ -27,7 +27,7 @@ Draw the map:<br />
 <b>@return: </b> <b>true</b> if successfully switched, <b>false</b> on error.<br/><br />
 --------------------------------------------------------------------<br /><br />
 Convert Isometric coordinates to Page coordinates:<br />
-<b>TMX_Parser.IsoToCoords(x, y, tileWidth, tileHeight);</b> <b>[object]</b><br />
+<b>TMX_Parser.CellToCoords(x, y, tileWidth, tileHeight);</b> <b>[object]</b><br />
 <b>@param</b> x: Map matrix X position. <b>[number]</b><br />
 <b>@param</b> y: Map matrix Y position. <b>[number]</b><br />
 <b>@param</b> tileWidth : Tile width. <b>[number]</b><br />
