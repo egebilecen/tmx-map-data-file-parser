@@ -341,6 +341,21 @@ var TMX_Parser = {
         },
         draw : function(){
             if(TMX_Parser.settings.debug) console.log("??? - TMX Parser - Drawing layers to the canvas.");
+            
+            //if fps enabled
+            if(TMX_Parser.fps.is_enable)
+            {
+                if(!TMX_Parser.fps.lastCallTime)
+                {
+                    TMX_Parser.fps.lastCallTime = new Date().getTime();
+                    TMX_Parser.fps.fps          = 0;
+                    return;
+                }
+
+                var delta = (new Date().getTime() - TMX_Parser.fps.lastCallTime) / 1000;
+                TMX_Parser.fps.lastCallTime = new Date().getTime();
+                TMX_Parser.fps.fps = Math.floor(1 / delta);
+            }
 
             //Update offsets if key press present
             if(TMX_Parser.keys.W.status)
@@ -777,6 +792,70 @@ var TMX_Parser = {
                 TMX_Parser.grid.hover.style.color = color;
                 TMX_Parser.grid.hover.style.alpha = alpha;
             }
+        }
+    },
+    fps : {
+        is_enable    : 0,
+        fps          : 0,
+        lastCallTime : 0,
+        delay        : 1000,
+        style        : {
+            font  : "20px Arial",
+            color : "red",
+            alpha : 1.0
+        },
+        toggleFPS    : function(elem){
+            if(typeof elem === "undefined")
+                elem = 0;
+
+            switch (TMX_Parser.fps.is_enable)
+            {
+                case 1: //disable the fps
+                    TMX_Parser.fps.is_enable = 0;
+
+                    if(typeof elem === "object")
+                    {
+                        elem.style.display = "none";
+                    }
+
+                    clearInterval(eb_fps_interval);
+                break;
+
+                case 0: //enable the fps
+                    if(typeof elem !== "object")
+                    {
+                        console.log("!!! - TMX Parser - No object given for show the FPS.");
+                        return false;
+                    }
+
+                    TMX_Parser.fps.is_enable = 1;
+
+                    elem.style.display = "inline-block";
+
+                    eb_fps_interval = setInterval(function(){
+                        elem.innerHTML = TMX_Parser.fps.fps;
+                    }, TMX_Parser.fps.delay);
+                break;
+            }
+            return TMX_Parser.fps.is_enable;
+        },
+        setStyle : function(font, color, alpha) {
+            if(typeof font !== "string")
+                font  = "20px Arial";
+            if(typeof color !== "string")
+                color = "#000";
+            if(typeof alpha !== "number")
+                alpha = 1.0;
+
+            TMX_Parser.fps.style.font  = font ;
+            TMX_Parser.fps.style.color = color;
+            TMX_Parser.fps.style.alpha = alpha;
+        },
+        setDelay : function(ms){
+            if(typeof ms !== "number")
+                ms = 1000;
+
+            TMX_Parser.fps.delay = ms;
         }
     },
     createNewEvent : function (event_name, property, data) {
