@@ -2,7 +2,7 @@
 // TMX Map Data Parser + Camera Control
 // ----------------------------------------------------------------------------
 // Author : Ege Bilecen
-// Website: egebilecen.info
+// Website: -
 // ----------------------------------------------------------------------------
 // Required scripts: jQuery
 // ----------------------------------------------------------------------------
@@ -416,8 +416,8 @@ var TMX_Parser = {
                         tile.draw_position.x += TMX_Parser.camera.offset.x;
                         tile.draw_position.y += TMX_Parser.camera.offset.y;
 
-                        var check_x = tile.draw_position.x * TMX_Parser.camera.zoom.current.scale.x;
-                        var check_y = tile.draw_position.y * TMX_Parser.camera.zoom.current.scale.y;
+                        var check_x = tile.draw_position.x * _scale.x;
+                        var check_y = tile.draw_position.y * _scale.y;
 
                         //check if this tile visible on screen
                         //TODO: add scale to find if visible or not
