@@ -17,7 +17,7 @@ Load the TMX file:<br />
 <b>TMX_Parser.run();</b> # Run parsing process manually. <b>[void]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
 Draw the map:<br />
-<b>TMX_Parser.draw(offsetX, offsetY);</b> # After layers rendered, run for drawing to canvas. (Function will be not fired automatically at currently. You must call it manually unless you don't handle the "<b>TMX_Parser_tileset_loaded</b>" event.) <b>[void]</b><br />
+<b>TMX_Parser.layers.draw(offsetX, offsetY);</b> # After layers rendered, run for drawing to canvas. (Function will be not fired automatically at currently. You must call it manually unless you don't handle the "<b>TMX_Parser_tileset_loaded</b>" event.) <b>[void]</b><br />
 <b>@param</b> offsetX: Offset from X. <b>[number]</b><br />
 <b>@param</b> offsetY: Offset from Y. <b>[number]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
