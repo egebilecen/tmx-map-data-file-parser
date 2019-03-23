@@ -416,11 +416,15 @@ var TMX_Parser = {
                         tile.draw_position.x += TMX_Parser.camera.offset.x;
                         tile.draw_position.y += TMX_Parser.camera.offset.y;
 
+                        var check_x = tile.draw_position.x * TMX_Parser.camera.zoom.current.scale.x;
+                        var check_y = tile.draw_position.y * TMX_Parser.camera.zoom.current.scale.y;
+
                         //check if this tile visible on screen
+                        //TODO: add scale to find if visible or not
                         if( //if not visible, just pass it
-                            tile.draw_position.x < -tileset.tileWidth || tile.draw_position.x > TMX_Parser.settings.ctx.canvas.width
+                            check_x < -tileset.tileWidth + 1 || check_x > TMX_Parser.settings.ctx.canvas.width
                             ||
-                            tile.draw_position.y < -tileset.tileHeight || tile.draw_position.y > TMX_Parser.settings.ctx.canvas.height
+                            check_y < -tileset.tileHeight + 1 || check_y > TMX_Parser.settings.ctx.canvas.height
                         )
                         {
                             continue;
@@ -804,37 +808,53 @@ var TMX_Parser = {
             color : "red",
             alpha : 1.0
         },
+        control      : {
+            elem  : null,
+            start : function(){
+                if(TMX_Parser.fps.control.elem !== null)
+                {
+                    TMX_Parser.fps.control.elem.style.display = "inline-block";
+                }
+                else new Error("!!! - TMX Parser - No object given for show the FPS.");
+                
+                TMX_Parser.fps.control.elem.style.display = "inline-block";
+
+                eb_fps_interval = setInterval(function(){
+                    TMX_Parser.fps.control.elem.innerHTML = TMX_Parser.fps.fps;
+                }, TMX_Parser.fps.delay);
+            },
+            stop : function(){
+                if(TMX_Parser.fps.control.elem !== null)
+                {
+                    TMX_Parser.fps.control.elem.style.display = "none";
+                }
+                else new Error("!!! - TMX Parser - No object given for show the FPS.");
+
+                clearInterval(eb_fps_interval);
+            },
+            reset : function(){
+                TMX_Parser.fps.control.stop();
+                TMX_Parser.fps.control.start();
+            }
+        },
         toggleFPS    : function(elem){
             if(typeof elem === "undefined")
                 elem = 0;
+
+            TMX_Parser.fps.control.elem = elem;
 
             switch (TMX_Parser.fps.is_enable)
             {
                 case 1: //disable the fps
                     TMX_Parser.fps.is_enable = 0;
-
-                    if(typeof elem === "object")
-                    {
-                        elem.style.display = "none";
-                    }
-
-                    clearInterval(eb_fps_interval);
+                    
+                    TMX_Parser.fps.control.stop();
                 break;
 
                 case 0: //enable the fps
-                    if(typeof elem !== "object")
-                    {
-                        console.log("!!! - TMX Parser - No object given for show the FPS.");
-                        return false;
-                    }
-
                     TMX_Parser.fps.is_enable = 1;
 
-                    elem.style.display = "inline-block";
-
-                    eb_fps_interval = setInterval(function(){
-                        elem.innerHTML = TMX_Parser.fps.fps;
-                    }, TMX_Parser.fps.delay);
+                    TMX_Parser.fps.control.start();
                 break;
             }
             return TMX_Parser.fps.is_enable;
@@ -856,6 +876,8 @@ var TMX_Parser = {
                 ms = 1000;
 
             TMX_Parser.fps.delay = ms;
+
+            TMX_Parser.fps.control.reset();
         }
     },
     createNewEvent : function (event_name, property, data) {
