@@ -46,16 +46,16 @@ Get the clicked tile information:<br />
 # Camera
 Camera offsets will be automatically applied when "draw()" function invoked.<br />
 Set offsets of x and y:<br />
-<b>TMX_Parser.setOffset(x, y);</b> <b>[void]</b><br />
+<b>TMX_Parser.camera.setOffset(x, y);</b> <b>[void]</b><br />
 <b>@param</b> x: Distance based on X axis. <b>[number]</b><br />
 <b>@param</b> y: Distance based on Y axis. <b>[number]</b><br /><br />
 If <b>null</b> passed as paramater, old offset value will be keeped.<br />
 --------------------------------------------------------------------<br /><br />
 Set offset x and y to 0:<br />
-<b>TMX_Parser.resetOffset();</b> <b>[void]</b><br /><br />
+<b>TMX_Parser.camera.resetOffset();</b> <b>[void]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
 Update offset x and y based on <b>TMX_Parser.camera.speed.[X/Y]</b> values:<br />
-<b>TMX_Parser.updateOffset(x_direction, y_direction);</b> <b>[void]</b><br />
+<b>TMX_Parser.camera.updateOffset(x_direction, y_direction);</b> <b>[void]</b><br />
 <b>@param</b> x_direction: Can be <b>1</b> or <b>2</b>. <b>[number]</b><br />
 <b>@param</b> y_direction: Can be <b>1</b> or <b>2</b>. <b>[number]</b><br /><br />
 <b>1</b> is increment, <b>2</b> is abatement. Any value that is not a <b>number</b> will be treated as <b>do nothing</b>.<br />
