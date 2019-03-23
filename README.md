@@ -17,9 +17,7 @@ Load the TMX file:<br />
 <b>TMX_Parser.run();</b> # Run parsing process manually. <b>[void]</b><br /><br />
 --------------------------------------------------------------------<br /><br />
 Draw the map:<br />
-<b>TMX_Parser.layers.draw(offsetX, offsetY);</b> # After layers rendered, run for drawing to canvas. (Function will be not fired automatically at currently. You must call it manually unless you don't handle the "<b>TMX_Parser_tileset_loaded</b>" event.) <b>[void]</b><br />
-<b>@param</b> offsetX: Offset from X. <b>[number]</b><br />
-<b>@param</b> offsetY: Offset from Y. <b>[number]</b><br /><br />
+<b>TMX_Parser.layers.draw();</b> # After layers rendered, run for drawing to canvas. (Function will be not fired automatically at currently. You must call it manually unless you don't handle the "<b>TMX_Parser_tileset_loaded</b>" event.) <b>[void]</b><br />
 --------------------------------------------------------------------<br /><br />
 <b>Note:</b> Every loaded file will be storing in the variable. If you want to switch to specific file and run functions on it, use function in the below:<br/>
 <b>TMX_Parser.watcher.switchFile(filePureName);</b> # Switch to specific file that already loaded. <b>[void]</b><br/>
