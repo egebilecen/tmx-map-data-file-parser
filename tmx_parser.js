@@ -420,11 +420,10 @@ var TMX_Parser = {
                         var check_y = tile.draw_position.y * _scale.y;
 
                         //check if this tile visible on screen
-                        //TODO: add scale to find if visible or not
                         if( //if not visible, just pass it
-                            check_x < -tileset.tileWidth + 1 || check_x > TMX_Parser.settings.ctx.canvas.width
+                            check_x < -tileset.tileWidth * _scale.x || check_x > TMX_Parser.settings.ctx.canvas.width
                             ||
-                            check_y < -tileset.tileHeight + 1 || check_y > TMX_Parser.settings.ctx.canvas.height
+                            check_y < -tileset.tileHeight * _scale.y || check_y > TMX_Parser.settings.ctx.canvas.height
                         )
                         {
                             continue;
