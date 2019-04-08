@@ -416,14 +416,26 @@ var TMX_Parser = {
                         tile.draw_position.x += TMX_Parser.camera.offset.x;
                         tile.draw_position.y += TMX_Parser.camera.offset.y;
 
-                        var check_x = tile.draw_position.x * _scale.x;
-                        var check_y = tile.draw_position.y * _scale.y;
+                        var check_x = tile.draw_position.x;
+                        var check_y = tile.draw_position.y;
+
+                        var tileW   = tileset.tileWidth;
+                        var tileH   = tileset.tileHeight;
+
+                        if(TMX_Parser.camera.zoom.is_enable)
+                        {
+                            check_x = check_x * _scale.x;
+                            check_y = check_y * _scale.y;
+
+                            tileW   = tileW * _scale.x;
+                            tileH   = tileH * _scale.y;
+                        }
 
                         //check if this tile visible on screen
                         if( //if not visible, just pass it
-                            check_x < -tileset.tileWidth * _scale.x || check_x > TMX_Parser.settings.ctx.canvas.width
+                            check_x < -tileW || check_x > TMX_Parser.settings.ctx.canvas.width
                             ||
-                            check_y < -tileset.tileHeight * _scale.y || check_y > TMX_Parser.settings.ctx.canvas.height
+                            check_y < -tileH || check_y > TMX_Parser.settings.ctx.canvas.height
                         )
                         {
                             continue;
